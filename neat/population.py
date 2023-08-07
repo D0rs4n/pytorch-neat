@@ -95,6 +95,10 @@ class Population:
                 self.speciate(genome, generation)
 
             if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
+                logger.info(f'Fitness threshold crossed: ')
+                logger.info(f'Finished Generation {generation}')
+                logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
                 return best_genome, generation
 
             # Generation Stats
