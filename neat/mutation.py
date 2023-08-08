@@ -7,7 +7,7 @@ import neat.utils as utils
 logger = logging.getLogger(__name__)
 
 
-def mutate(genome, config):
+def mutate(genome, config, population):
     """
     Applies connection and structural mutations at proper rate.
     Connection Mutations: Uniform Weight Perturbation or Replace Weight Value with Random Value
@@ -26,7 +26,7 @@ def mutate(genome, config):
                 c_gene.set_rand_weight()
 
     if utils.rand_uni_val() < config.ADD_NODE_MUTATION_RATE:
-        genome.add_node_mutation()
+        genome.add_node_mutation(population=population)
 
     if utils.rand_uni_val() < config.ADD_CONNECTION_MUTATION_RATE:
-        genome.add_connection_mutation()
+        genome.add_connection_mutation(population=population)

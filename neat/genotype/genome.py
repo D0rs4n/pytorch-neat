@@ -19,7 +19,7 @@ class Genome:
         self.adjusted_fitness = None
         self.species = None
 
-    def add_connection_mutation(self):
+    def add_connection_mutation(self, population):
         """
         In the add connection mutation, a single new connection gene is added
         connecting two previously unconnected nodes.
@@ -35,9 +35,9 @@ class Genome:
 
             if self._is_valid_connection(node_in_id, node_out_id):
                 # Add connection
-                self.add_connection_gene(node_in_id, node_out_id)
+                self.add_connection_gene(node_in_id, node_out_id, population=population)
 
-    def add_node_mutation(self):
+    def add_node_mutation(self, population):
         """
         This method adds a node by modifying connection genes.
         In the add node mutation an existing connection is split and the new node placed where the old
@@ -51,8 +51,13 @@ class Genome:
         existing_connection = self._get_rand_connection_gene()
 
         # Create two connections to replace existing connection with new node in the middle
-        self.add_connection_gene(existing_connection.in_node_id, new_node.id, weight=1)
-        self.add_connection_gene(new_node.id, existing_connection.out_node_id, weight=existing_connection.weight)
+        self.add_connection_gene(existing_connection.in_node_id, new_node.id, weight=1, population=population)
+        self.add_connection_gene(
+            new_node.id,
+            existing_connection.out_node_id,
+            weight=existing_connection.weight,
+            population=population
+        )
 
         # disable original connection
         existing_connection.is_enabled = False
@@ -126,8 +131,8 @@ class Genome:
                 node_input_ids.append(c_gene.in_node_id)
         return node_input_ids
 
-    def add_connection_gene(self, in_node_id, out_node_id, is_enabled=True, weight=None):
-        new_c_gene = ConnectionGene(in_node_id, out_node_id, is_enabled)
+    def add_connection_gene(self, in_node_id, out_node_id, is_enabled=True, weight=None, population=None):
+        new_c_gene = ConnectionGene(in_node_id, out_node_id, is_enabled, population)
 
         if weight is not None:
             new_c_gene.set_weight(float(weight))
@@ -144,8 +149,8 @@ class Genome:
         self.node_genes.append(new_gene)
         return new_gene
 
-    def add_connection_copy(self, copy):
-        new_c_gene = ConnectionGene(copy.in_node_id, copy.out_node_id, copy.is_enabled)
+    def add_connection_copy(self, copy, population):
+        new_c_gene = ConnectionGene(copy.in_node_id, copy.out_node_id, copy.is_enabled, population)
         new_c_gene.set_weight(float(copy.weight))
         new_c_gene.set_innov_num(copy.innov_num)
 

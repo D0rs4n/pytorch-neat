@@ -17,12 +17,13 @@ from neat.genotype.genome import Genome
 logger = logging.getLogger(__name__)
 
 
-def crossover(genome_1, genome_2, config):
+def crossover(genome_1, genome_2, config, population):
     """
     Crossovers two Genome instances as described in the original NEAT implementation
     :param genome_1: First Genome Instance
     :param genome_2: Second Genome Instance
     :param config: Experiment's configuration class
+    :param population: Population class for Genome
     :return: A child Genome Instance
     """
 
@@ -54,7 +55,7 @@ def crossover(genome_1, genome_2, config):
             if is_reenabeled or enabled_in_best_parent:
                 child_gene.is_enabled = True
 
-        child.add_connection_copy(child_gene)
+        child.add_connection_copy(child_gene, population)
 
     # Crossover Nodes
     # Randomly add matching genes from both parents
