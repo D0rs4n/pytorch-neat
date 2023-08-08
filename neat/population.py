@@ -82,8 +82,8 @@ class Population:
                     parent_1 = random.choice(cur_members)
                     parent_2 = random.choice(cur_members)
 
-                    child = crossover(parent_1, parent_2, self.Config)
-                    mutate(child, self.Config)
+                    child = crossover(parent_1, parent_2, self.Config, Population)
+                    mutate(child, self.Config, Population)
                     new_population.append(child)
 
             # Set new population
@@ -158,11 +158,11 @@ class Population:
             # Create connections
             for input in inputs:
                 for output in outputs:
-                    new_genome.add_connection_gene(input.id, output.id)
+                    new_genome.add_connection_gene(input.id, output.id, population=Population)
 
             if bias is not None:
                 for output in outputs:
-                    new_genome.add_connection_gene(bias.id, output.id)
+                    new_genome.add_connection_gene(bias.id, output.id, population=Population)
 
             pop.append(new_genome)
 
