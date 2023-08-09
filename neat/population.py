@@ -2,6 +2,7 @@ import logging
 import random
 
 import numpy as np
+import cloudpickle
 
 import neat.utils as utils
 from neat.genotype.genome import Genome
@@ -17,10 +18,16 @@ class Population:
     __global_innovation_number = 0
     current_gen_innovation = []  # Can be reset after each generation according to paper
 
-    def __init__(self, config):
+    def __init__(self, config, filename = None):
         self.Config = config()
-        self.population = self.set_initial_population()
-        self.species = []
+        if filename:
+            with open(filename, "rb") as f:
+                imported = cloudpickle.loads(f.read())
+                self.population = imported["population"]
+                self.species = imported["species"]
+        else:
+            self.population = self.set_initial_population()
+            self.species = []
 
         for genome in self.population:
             self.speciate(genome, 0)
@@ -167,6 +174,11 @@ class Population:
             pop.append(new_genome)
 
         return pop
+
+    def export(self, filename):
+        with open(filename, "wb") as f:
+            export = {"population": self.population, "species": self.species}
+            f.write(cloudpickle.dumps(export))
 
     @staticmethod
     def get_new_innovation_num():
