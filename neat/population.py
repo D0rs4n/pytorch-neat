@@ -5,6 +5,7 @@ from functools import partial
 
 import numpy as np
 import torch
+import cloudpickle
 
 import neat.utils as utils
 from neat.genotype.genome import Genome
@@ -24,10 +25,16 @@ class Population:
     __global_innovation_number = 0
     current_gen_innovation = []  # Can be reset after each generation according to paper
 
-    def __init__(self, config):
+    def __init__(self, config, filename = None):
         self.Config = config()
-        self.population = self.set_initial_population()
-        self.species = []
+        if filename:
+            with open(filename, "rb") as f:
+                imported = cloudpickle.loads(f.read())
+                self.population = imported["population"]
+                self.species = imported["species"]
+        else:
+            self.population = self.set_initial_population()
+            self.species = []
 
         for genome in self.population:
             self.speciate(genome, 0)
@@ -94,8 +101,8 @@ class Population:
                     parent_1 = random.choice(cur_members)
                     parent_2 = random.choice(cur_members)
 
-                    child = crossover(parent_1, parent_2, self.Config)
-                    mutate(child, self.Config)
+                    child = crossover(parent_1, parent_2, self.Config, Population)
+                    mutate(child, self.Config, Population)
                     new_population.append(child)
 
             # Set new population
@@ -107,7 +114,7 @@ class Population:
                 self.speciate(genome, generation)
 
             if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
-                logger.info("Fitness threshold reached, optimal solution: ")
+                logger.info(f'Fitness threshold crossed: ')
                 logger.info(f'Finished Generation {generation}')
                 logger.info(f'Best Genome Fitness: {best_genome.fitness}')
                 logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
@@ -173,15 +180,20 @@ class Population:
             # Create connections
             for input in inputs:
                 for output in outputs:
-                    new_genome.add_connection_gene(input.id, output.id)
+                    new_genome.add_connection_gene(input.id, output.id, population=Population)
 
             if bias is not None:
                 for output in outputs:
-                    new_genome.add_connection_gene(bias.id, output.id)
+                    new_genome.add_connection_gene(bias.id, output.id, population=Population)
 
             pop.append(new_genome)
 
         return pop
+
+    def export(self, filename):
+        with open(filename, "wb") as f:
+            export = {"population": self.population, "species": self.species}
+            f.write(cloudpickle.dumps(export))
 
     @staticmethod
     def get_new_innovation_num():
