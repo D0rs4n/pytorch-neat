@@ -1,7 +1,10 @@
 import logging
 import random
+import multiprocessing
+from functools import partial
 
 import numpy as np
+import torch
 import cloudpickle
 
 import neat.utils as utils
@@ -10,8 +13,12 @@ from neat.species import Species
 from neat.crossover import crossover
 from neat.mutation import mutate
 
-
 logger = logging.getLogger(__name__)
+
+
+def evaluate_genome(fitness_fn, genome):
+    fitness = max(0, fitness_fn(genome))
+    return fitness
 
 
 class Population:
@@ -33,13 +40,18 @@ class Population:
             self.speciate(genome, 0)
 
     def run(self):
+
+        # Create a pool of worker processes
+        pool = multiprocessing.Pool()
         for generation in range(1, self.Config.NUMBER_OF_GENERATIONS):
-            # Get Fitness of Every Genome
-            for genome in self.population:
-                genome.fitness = max(0, self.Config.fitness_fn(genome))
+
+            fitness_values = pool.map(partial(evaluate_genome, self.Config.fitness_fn), self.population)
+
+            for i, genome in enumerate(self.population):
+                genome.fitness = max(0, fitness_values[i])
 
             best_genome = utils.get_best_genome(self.population)
-
+            torch.cuda.empty_cache()
             # Reproduce
             all_fitnesses = []
             remaining_species = []
@@ -54,7 +66,7 @@ class Population:
             min_fitness = min(all_fitnesses)
             max_fitness = max(all_fitnesses)
 
-            fit_range = max(1.0, (max_fitness-min_fitness))
+            fit_range = max(1.0, (max_fitness - min_fitness))
             for species in remaining_species:
                 # Set adjusted fitness
                 avg_species_fitness = np.mean([g.fitness for g in species.members])
@@ -67,7 +79,7 @@ class Population:
             new_population = []
             for species in remaining_species:
                 if species.adjusted_fitness > 0:
-                    size = max(2, int((species.adjusted_fitness/adj_fitness_sum) * self.Config.POPULATION_SIZE))
+                    size = max(2, int((species.adjusted_fitness / adj_fitness_sum) * self.Config.POPULATION_SIZE))
                 else:
                     size = 2
 
@@ -113,6 +125,9 @@ class Population:
                 logger.info(f'Finished Generation {generation}')
                 logger.info(f'Best Genome Fitness: {best_genome.fitness}')
                 logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+
+        pool.close()
+        pool.join()
 
         return None, None
 
