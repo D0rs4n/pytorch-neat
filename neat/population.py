@@ -29,8 +29,8 @@ class Population:
             self.population = self.set_initial_population()
             self.species = []
 
-        for genome in self.population:
-            self.speciate(genome, 0)
+            for genome in self.population:
+                self.speciate(genome, 0)
 
     def run(self):
         for generation in range(1, self.Config.NUMBER_OF_GENERATIONS):
