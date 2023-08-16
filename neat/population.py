@@ -41,7 +41,7 @@ class Population:
             # If using novelty-search, collect behavior tensors.
             for genome in self.population:
                 if self.novelty:
-                    genome.behavior = max(0, self.Config.behaviour_fn(genome))
+                    genome.behavior = self.Config.behaviour_fn(genome)
                 else:
                     genome.fitness = max(0, self.Config.fitness_fn(genome))
 
