@@ -1,15 +1,14 @@
 import logging
 import random
 
-import numpy as np
 import cloudpickle
+import numpy as np
 
 import neat.utils as utils
-from neat.genotype.genome import Genome
-from neat.species import Species
 from neat.crossover import crossover
+from neat.genotype.genome import Genome
 from neat.mutation import mutate
-
+from neat.species import Species
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ class Population:
     __global_innovation_number = 0
     current_gen_innovation = []  # Can be reset after each generation according to paper
 
-    def __init__(self, config, filename = None):
+    def __init__(self, config, filename=None):
         self.Config = config()
         if filename:
             with open(filename, "rb") as f:
@@ -54,11 +53,13 @@ class Population:
             min_fitness = min(all_fitnesses)
             max_fitness = max(all_fitnesses)
 
-            fit_range = max(1.0, (max_fitness-min_fitness))
+            fit_range = max(1.0, (max_fitness - min_fitness))
             for species in remaining_species:
                 # Set adjusted fitness
                 avg_species_fitness = np.mean([g.fitness for g in species.members])
-                species.adjusted_fitness = (avg_species_fitness - min_fitness) / fit_range
+                species.adjusted_fitness = (
+                    avg_species_fitness - min_fitness
+                ) / fit_range
 
             adj_fitnesses = [s.adjusted_fitness for s in remaining_species]
             adj_fitness_sum = sum(adj_fitnesses)
@@ -67,7 +68,13 @@ class Population:
             new_population = []
             for species in remaining_species:
                 if species.adjusted_fitness > 0:
-                    size = max(2, int((species.adjusted_fitness/adj_fitness_sum) * self.Config.POPULATION_SIZE))
+                    size = max(
+                        2,
+                        int(
+                            (species.adjusted_fitness / adj_fitness_sum)
+                            * self.Config.POPULATION_SIZE
+                        ),
+                    )
                 else:
                     size = 2
 
@@ -102,17 +109,17 @@ class Population:
                 self.speciate(genome, generation)
 
             if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
-                logger.info(f'Fitness threshold crossed: ')
-                logger.info(f'Finished Generation {generation}')
-                logger.info(f'Best Genome Fitness: {best_genome.fitness}')
-                logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                logger.info("Fitness threshold crossed: ")
+                logger.info(f"Finished Generation {generation}")
+                logger.info(f"Best Genome Fitness: {best_genome.fitness}")
+                logger.info(f"Best Genome Length {len(best_genome.connection_genes)}\n")
                 return best_genome, generation
 
             # Generation Stats
             if self.Config.VERBOSE:
-                logger.info(f'Finished Generation {generation}')
-                logger.info(f'Best Genome Fitness: {best_genome.fitness}')
-                logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                logger.info(f"Finished Generation {generation}")
+                logger.info(f"Best Genome Fitness: {best_genome.fitness}")
+                logger.info(f"Best Genome Length {len(best_genome.connection_genes)}\n")
 
         return None, None
 
@@ -124,7 +131,10 @@ class Population:
         :return: None
         """
         for species in self.species:
-            if Species.species_distance(genome, species.model_genome) <= self.Config.SPECIATION_THRESHOLD:
+            if (
+                Species.species_distance(genome, species.model_genome)
+                <= self.Config.SPECIATION_THRESHOLD
+            ):
                 genome.species = species.id
                 species.members.append(genome)
                 return
@@ -152,24 +162,28 @@ class Population:
 
             # Create nodes
             for j in range(self.Config.NUM_INPUTS):
-                n = new_genome.add_node_gene('input')
+                n = new_genome.add_node_gene("input")
                 inputs.append(n)
 
             for j in range(self.Config.NUM_OUTPUTS):
-                n = new_genome.add_node_gene('output')
+                n = new_genome.add_node_gene("output")
                 outputs.append(n)
 
             if self.Config.USE_BIAS:
-                bias = new_genome.add_node_gene('bias')
+                bias = new_genome.add_node_gene("bias")
 
             # Create connections
             for input in inputs:
                 for output in outputs:
-                    new_genome.add_connection_gene(input.id, output.id, population=Population)
+                    new_genome.add_connection_gene(
+                        input.id, output.id, population=Population
+                    )
 
             if bias is not None:
                 for output in outputs:
-                    new_genome.add_connection_gene(bias.id, output.id, population=Population)
+                    new_genome.add_connection_gene(
+                        bias.id, output.id, population=Population
+                    )
 
             pop.append(new_genome)
 
