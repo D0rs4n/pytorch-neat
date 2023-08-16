@@ -16,6 +16,7 @@ class Genome:
         self.node_ids = set()
         self.innov_nums = set()
         self.fitness = None
+        self.behavior = None
         self.adjusted_fitness = None
         self.species = None
 

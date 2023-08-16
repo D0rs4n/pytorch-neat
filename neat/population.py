@@ -3,13 +3,13 @@ import random
 
 import numpy as np
 import cloudpickle
+from sklearn.neighbors import NearestNeighbors
 
 import neat.utils as utils
 from neat.genotype.genome import Genome
 from neat.species import Species
 from neat.crossover import crossover
 from neat.mutation import mutate
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class Population:
     __global_innovation_number = 0
     current_gen_innovation = []  # Can be reset after each generation according to paper
 
-    def __init__(self, config, filename = None):
+    def __init__(self, config, filename=None, novelty=False):
         self.Config = config()
         if filename:
             with open(filename, "rb") as f:
@@ -31,12 +31,34 @@ class Population:
 
             for genome in self.population:
                 self.speciate(genome, 0)
+        if novelty:
+            self.novelty = True
+            self.archive = []
 
     def run(self):
         for generation in range(1, self.Config.NUMBER_OF_GENERATIONS):
             # Get Fitness of Every Genome
+            # If using novelty-search, collect behavior tensors.
             for genome in self.population:
-                genome.fitness = max(0, self.Config.fitness_fn(genome))
+                if self.novelty:
+                    genome.behavior = max(0, self.Config.behaviour_fn(genome))
+                else:
+                    genome.fitness = max(0, self.Config.fitness_fn(genome))
+
+            if self.novelty:
+                # Initializing a KNN Classifier.
+                neigh = NearestNeighbors(n_neighbors=self.Config.KNN)
+
+                # The distance has to be determined by the archive as well as the current population
+                noveltyset = self.archive + self.population
+                neigh.fit(noveltyset)
+
+                for genome in self.population:
+                    distances, indices = neigh.kneighbors(genome.behavior)
+                    average_distance_to_knn = np.sum(distances) / self.Config.KNN
+                    if average_distance_to_knn > self.Config.NOVELTY_THRESHOLD:
+                        self.archive.append(genome.behavior)
+                    genome.fitness = (average_distance_to_knn + self.Config.BIAS) * 100
 
             best_genome = utils.get_best_genome(self.population)
 
@@ -54,7 +76,7 @@ class Population:
             min_fitness = min(all_fitnesses)
             max_fitness = max(all_fitnesses)
 
-            fit_range = max(1.0, (max_fitness-min_fitness))
+            fit_range = max(1.0, (max_fitness - min_fitness))
             for species in remaining_species:
                 # Set adjusted fitness
                 avg_species_fitness = np.mean([g.fitness for g in species.members])
@@ -67,7 +89,7 @@ class Population:
             new_population = []
             for species in remaining_species:
                 if species.adjusted_fitness > 0:
-                    size = max(2, int((species.adjusted_fitness/adj_fitness_sum) * self.Config.POPULATION_SIZE))
+                    size = max(2, int((species.adjusted_fitness / adj_fitness_sum) * self.Config.POPULATION_SIZE))
                 else:
                     size = 2
 
