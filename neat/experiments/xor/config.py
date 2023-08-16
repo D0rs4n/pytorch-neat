@@ -1,6 +1,6 @@
 import torch
-import torch.nn as nn
 from torch import autograd
+
 from neat.phenotype.feed_forward import FeedForwardNet
 
 
@@ -12,7 +12,7 @@ class XORConfig:
     NUM_OUTPUTS = 1
     USE_BIAS = True
 
-    ACTIVATION = 'sigmoid'
+    ACTIVATION = "sigmoid"
     SCALE_ACTIVATION = 4.9
 
     FITNESS_THRESHOLD = 3.9
@@ -31,26 +31,23 @@ class XORConfig:
     # Top percentage of species to be saved before mating
     PERCENTAGE_TO_SAVE = 0.30
 
-    inputs = list(map(lambda s: autograd.Variable(torch.Tensor([s])), [
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1]
-    ]))
+    inputs = list(
+        map(
+            lambda s: autograd.Variable(torch.Tensor([s])),
+            [[0, 0], [0, 1], [1, 0], [1, 1]],
+        )
+    )
 
-    targets = list(map(lambda s: autograd.Variable(torch.Tensor([s])), [
-        [0],
-        [1],
-        [1],
-        [0]
-    ]))
+    targets = list(
+        map(lambda s: autograd.Variable(torch.Tensor([s])), [[0], [1], [1], [0]])
+    )
 
     def fitness_fn(self, genome):
         fitness = 4.0  # Max fitness for XOR
 
         phenotype = FeedForwardNet(genome, self)
         phenotype.to(self.DEVICE)
-        criterion = nn.MSELoss()
+        # criterion = nn.MSELoss()
 
         for input, target in zip(self.inputs, self.targets):  # 4 training examples
             input, target = input.to(self.DEVICE), target.to(self.DEVICE)

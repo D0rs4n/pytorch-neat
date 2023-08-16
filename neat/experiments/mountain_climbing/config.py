@@ -1,6 +1,7 @@
-import torch
 import gym
 import numpy as np
+import torch
+
 from neat.phenotype.feed_forward import FeedForwardNet
 
 
@@ -12,7 +13,7 @@ class MountainClimbConfig:
     NUM_OUTPUTS = 1
     USE_BIAS = True
 
-    ACTIVATION = 'tanh'
+    ACTIVATION = "tanh"
     SCALE_ACTIVATION = 4.9
 
     FITNESS_THRESHOLD = 90.0
@@ -33,7 +34,7 @@ class MountainClimbConfig:
 
     def fitness_fn(self, genome):
         # OpenAI Gym
-        env = gym.make('MountainCarContinuous-v0')
+        env = gym.make("MountainCarContinuous-v0")
         done = False
         observation = env.reset()
 

@@ -39,14 +39,14 @@ class XORConfig:
     NUM_OUTPUTS = 1
     # Boolean - use a bias node in each genome
     USE_BIAS = True
-    
+
     # String - which activation function each node will use
     # Note: currently only sigmoid and tanh are available - see v1/activations.py for functions
     ACTIVATION = 'sigmoid'
     # Float - what value to scale the activation function's input by
     # This default value is taken directly from the paper
     SCALE_ACTIVATION = 4.9
-    
+
     # Float - a solution is defined as having a fitness >= this fitness threshold
     FITNESS_THRESHOLD = 3.9
 
@@ -59,19 +59,19 @@ class XORConfig:
 
     # Float between 0.0 and 1.0 - rate at which a connection gene will be mutated
     CONNECTION_MUTATION_RATE = 0.80
-    # Float between 0.0 and 1.0 - rate at which a connections weight is perturbed (if connection is to be mutated) 
+    # Float between 0.0 and 1.0 - rate at which a connections weight is perturbed (if connection is to be mutated)
     CONNECTION_PERTURBATION_RATE = 0.90
     # Float between 0.0 and 1.0 - rate at which a node will randomly be added to a genome
     ADD_NODE_MUTATION_RATE = 0.03
     # Float between 0.0 and 1.0 - rate at which a connection will randomly be added to a genome
     ADD_CONNECTION_MUTATION_RATE = 0.5
-    
+
     # Float between 0.0 and 1.0 - rate at which a connection, if disabled, will be re-enabled
     CROSSOVER_REENABLE_CONNECTION_GENE_RATE = 0.25
 
     # Float between 0.0 and 1.0 - Top percentage of species to be saved before mating
     PERCENTAGE_TO_SAVE = 0.30
-    
+
     # XOR's input and output values
     # Note: it is not always necessary to explicity include these values. Depends on the fitness evaluation.
     # See an OpenAI gym experiment config file for a different fitness evaluation example.

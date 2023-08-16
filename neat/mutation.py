@@ -3,7 +3,6 @@ import random
 
 import neat.utils as utils
 
-
 logger = logging.getLogger(__name__)
 
 

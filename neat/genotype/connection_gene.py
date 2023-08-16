@@ -1,9 +1,9 @@
 import torch
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class ConnectionGene:
-
     def __init__(self, in_node_id, out_node_id, is_enabled, population):
         self.in_node_id = in_node_id
         self.out_node_id = out_node_id
@@ -45,7 +45,21 @@ class ConnectionGene:
         return population.get_new_innovation_num()
 
     def __eq__(self, other):
-        return (self.in_node_id == other.in_node_id) and (self.out_node_id == other.out_node_id)
+        return (self.in_node_id == other.in_node_id) and (
+            self.out_node_id == other.out_node_id
+        )
 
     def __str__(self):
-        return 'In: ' + str(self.in_node_id) + '\nOut: ' + str(self.out_node_id) + '\nIs Enabled: ' + str(self.is_enabled) + '\nInnovation #: ' + str(self.innov_num) + '\nWeight: ' + str(float(self.weight)) + '\n'
+        return (
+            "In: "
+            + str(self.in_node_id)
+            + "\nOut: "
+            + str(self.out_node_id)
+            + "\nIs Enabled: "
+            + str(self.is_enabled)
+            + "\nInnovation #: "
+            + str(self.innov_num)
+            + "\nWeight: "
+            + str(float(self.weight))
+            + "\n"
+        )
