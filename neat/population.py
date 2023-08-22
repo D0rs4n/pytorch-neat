@@ -52,19 +52,21 @@ class Population:
                     genome.fitness = max(0, self.Config.fitness_fn(genome))
 
             if self.novelty:
-                # Initializing a KNN Classifier.
-                neigh = NearestNeighbors(n_neighbors=self.Config.KNN)
-
-                # The distance has to be determined by the archive as well as the current population
-                if len(self.archive) > 0:
-                    noveltyset = np.concatenate((np.array(self.archive, dtype=object), np.array([x.behavior for x in self.population], dtype=object)), axis=0)
-                else:
-                    noveltyset = np.array([x.behavior for x in self.population], dtype=object)
-
-                neigh.fit(noveltyset)
-
                 for genome in self.population:
-                    distances, indices = neigh.kneighbors(genome.behavior.reshape(1,-1))
+                    # Initializing a KNN Classifier.
+                    neigh = NearestNeighbors(n_neighbors=self.Config.KNN)
+
+                    # The distance has to be determined by the archive as well as the current genome
+                    if len(self.archive) > 0:
+                        noveltyset = np.concatenate((np.array(self.archive, dtype=object),
+                                                     np.array([x.behavior for x in self.population if x != genome],
+                                                              dtype=object)), axis=0)
+                    else:
+                        noveltyset = np.array([x.behavior for x in self.population if x != genome], dtype=object)
+
+                    neigh.fit(noveltyset)
+
+                    distances, indices = neigh.kneighbors(genome.behavior.reshape(1, -1))
                     average_distance_to_knn = np.sum(distances) / self.Config.KNN
                     if average_distance_to_knn > self.Config.NOVELTY_THRESHOLD:
                         self.archive.append(genome.behavior)
