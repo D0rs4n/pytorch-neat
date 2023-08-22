@@ -43,7 +43,11 @@ class Population:
             # If using novelty-search, collect behavior tensors.
             for genome in self.population:
                 if self.novelty:
-                    genome.behavior = self.Config.behaviour_fn(genome)
+                    behavior, score = self.Config.behaviour_fn(genome)
+
+                    genome.behavior = behavior
+                    genome.objective_score = score
+
                 else:
                     genome.fitness = max(0, self.Config.fitness_fn(genome))
 
@@ -129,12 +133,20 @@ class Population:
             for genome in self.population:
                 self.speciate(genome, generation)
 
-            if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
-                logger.info(f'Fitness threshold crossed: ')
-                logger.info(f'Finished Generation {generation}')
-                logger.info(f'Best Genome Fitness: {best_genome.fitness}')
-                logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
-                return best_genome, generation
+            if self.novelty:
+                if best_genome.objective_score >= self.Config.FITNESS_THRESHOLD:
+                    logger.info(f'Fitness threshold crossed: ')
+                    logger.info(f'Finished Generation {generation}')
+                    logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                    logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                    return best_genome, generation
+            else:
+                if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
+                    logger.info(f'Fitness threshold crossed: ')
+                    logger.info(f'Finished Generation {generation}')
+                    logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                    logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                    return best_genome, generation
 
             # Generation Stats
             if self.Config.VERBOSE:
