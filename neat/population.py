@@ -18,8 +18,9 @@ class Population:
     __global_innovation_number = 0
     current_gen_innovation = []  # Can be reset after each generation according to paper
 
-    def __init__(self, config, filename=None, novelty=False):
+    def __init__(self, config, filename=None, novelty=False, on_generation=None):
         self.Config = config()
+        self.on_generation = on_generation
         if filename:
             with open(filename, "rb") as f:
                 imported = cloudpickle.loads(f.read())
@@ -46,8 +47,7 @@ class Population:
                     behavior, score = self.Config.behaviour_fn(genome)
 
                     genome.behavior = behavior
-                    genome.objective_score = score
-
+                    genome.objective_score = max(0, score)
                 else:
                     genome.fitness = max(0, self.Config.fitness_fn(genome))
 
@@ -139,7 +139,8 @@ class Population:
                 if best_genome.objective_score >= self.Config.FITNESS_THRESHOLD:
                     logger.info(f'Fitness threshold crossed: ')
                     logger.info(f'Finished Generation {generation}')
-                    logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                    logger.info(f'Best Genome Novelty score: {best_genome.fitness}')
+                    logger.info(f'Best Genome Objective score: {best_genome.objective_score}')
                     logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
                     return best_genome, generation
             else:
@@ -153,8 +154,17 @@ class Population:
             # Generation Stats
             if self.Config.VERBOSE:
                 logger.info(f'Finished Generation {generation}')
-                logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                if self.novelty:
+                    logger.info(f'Best Genome Novelty score: {best_genome.fitness}')
+                    logger.info(f'Best Genome Objective score: {best_genome.objective_score}')
+                else:
+                    logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+
                 logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+
+            # Call the on_generation function after each generation, for further processing.
+            if self.on_generation:
+                self.on_generation(generation, best_genome, len(best_genome.connection_genes))
 
         return None, None
 
