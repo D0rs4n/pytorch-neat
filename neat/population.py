@@ -1,4 +1,5 @@
 import logging
+import math
 import random
 
 import numpy as np
@@ -54,6 +55,7 @@ class Population:
             if self.novelty:
                 for genome in self.population:
                     # Initializing a KNN Classifier.
+                    self.Config.KNN = self.Config.KNN + math.floor(len(self.archive) / 2)
                     neigh = NearestNeighbors(n_neighbors=self.Config.KNN)
 
                     # The distance has to be determined by the archive as well as the current genome
