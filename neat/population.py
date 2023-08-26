@@ -56,14 +56,23 @@ class Population:
                     # Initializing a KNN Classifier.
                     neigh = NearestNeighbors(n_neighbors=self.Config.KNN)
 
-                    # The distance has to be determined by the archive as well as the current genome
-                    if len(self.archive) > 0:
-                        noveltyset = np.concatenate((np.array(self.archive, dtype=object),
-                                                     np.array([x.behavior for x in self.population if x != genome],
-                                                              dtype=object)), axis=0)
-                    else:
-                        noveltyset = np.array([x.behavior for x in self.population if x != genome], dtype=object)
+                    # Create a list to hold the behaviors for KNN calculation
+                    behaviors_for_knn = []
 
+                    # Add behaviors from self.archive excluding genome.behavior
+                    for behavior in self.archive:
+                        if not np.array_equal(behavior, genome.behavior):
+                            behaviors_for_knn.append(behavior)
+
+                    # Add behaviors from self.population excluding genome
+                    for individual in self.population:
+                        if individual != genome:
+                            behaviors_for_knn.append(individual.behavior)
+
+                    # Convert the list to a NumPy array
+                    noveltyset = np.array(behaviors_for_knn, dtype=object)
+
+                    # Fit the KNN model with the noveltyset
                     neigh.fit(noveltyset)
 
                     distances, indices = neigh.kneighbors(genome.behavior.reshape(1, -1))
