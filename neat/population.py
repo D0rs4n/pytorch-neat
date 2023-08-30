@@ -37,7 +37,7 @@ class Population:
         
         self.novelty = novelty
 
-        if novelty:
+        if novelty and not filename:
             self.archive = []
 
     def run(self):
