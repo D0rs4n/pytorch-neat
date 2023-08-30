@@ -26,6 +26,8 @@ class Population:
                 imported = cloudpickle.loads(f.read())
                 self.population = imported["population"]
                 self.species = imported["species"]
+                if novelty and (archive := imported.get("archive", None)):
+                    self.archive = archive
         else:
             self.population = self.set_initial_population()
             self.species = []
@@ -238,7 +240,11 @@ class Population:
 
     def export(self, filename):
         with open(filename, "wb") as f:
-            export = {"population": self.population, "species": self.species}
+            if self.novelty:
+                export = {"population": self.population, "species": self.species, "archive": self.archive}
+            else:
+                export = {"population": self.population, "species": self.species}
+
             f.write(cloudpickle.dumps(export))
 
     @staticmethod
