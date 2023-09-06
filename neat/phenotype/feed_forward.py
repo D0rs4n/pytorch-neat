@@ -17,6 +17,7 @@ class FeedForwardNet(nn.Module):
         self.lin_modules = nn.ModuleList()
         self.config = config
         self.activation = a.Activations().get(config.ACTIVATION)
+        self.stacked_units = self.genome.order_units(self.units)
 
         for unit in self.units:
             self.lin_modules.append(unit.linear)
@@ -26,7 +27,6 @@ class FeedForwardNet(nn.Module):
         input_units = [u for u in self.units if u.ref_node.type == 'input']
         output_units = [u for u in self.units if u.ref_node.type == 'output']
         bias_units = [u for u in self.units if u.ref_node.type == 'bias']
-        stacked_units = self.genome.order_units(self.units)
 
         # Set input values
         for u in input_units:
@@ -37,8 +37,9 @@ class FeedForwardNet(nn.Module):
             outputs[u.ref_node.id] = torch.ones((1, 1)).to(device)[0][0]
 
         # Compute through directed topology
-        while len(stacked_units) > 0:
-            current_unit = stacked_units.pop()
+        i = len(self.stacked_units) - 1
+        while i >= 0:
+            current_unit = self.stacked_units[i]
 
             if current_unit.ref_node.type != 'input' and current_unit.ref_node.type != 'bias':
                 # Build input vector to current node
@@ -58,7 +59,7 @@ class FeedForwardNet(nn.Module):
 
                 # Add to outputs dictionary
                 outputs[current_unit.ref_node.id] = out
-
+                i -= 1
         # Build output vector
         output = autograd.Variable(torch.zeros((1, len(output_units)), device=device, requires_grad=True))
         for i, u in enumerate(output_units):
