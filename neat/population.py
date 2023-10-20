@@ -2,8 +2,8 @@ import logging
 import random
 
 import cloudpickle
-from sklearn.neighbors import NearestNeighbors
 import numpy as np
+from sklearn.neighbors import NearestNeighbors
 
 import neat.utils as utils
 from neat.crossover import crossover
@@ -34,7 +34,7 @@ class Population:
 
             for genome in self.population:
                 self.speciate(genome, 0)
-        
+
         self.novelty = novelty
 
         if novelty and not filename:
@@ -77,7 +77,9 @@ class Population:
                     # Fit the KNN model with the noveltyset
                     neigh.fit(noveltyset)
 
-                    distances, indices = neigh.kneighbors(genome.behavior.reshape(1, -1))
+                    distances, indices = neigh.kneighbors(
+                        genome.behavior.reshape(1, -1)
+                    )
                     average_distance_to_knn = np.sum(distances) / self.Config.KNN
                     if average_distance_to_knn > self.Config.NOVELTY_THRESHOLD:
                         self.archive.append(genome.behavior)
@@ -114,7 +116,13 @@ class Population:
             new_population = []
             for species in remaining_species:
                 if species.adjusted_fitness > 0:
-                    size = max(2, int((species.adjusted_fitness / adj_fitness_sum) * self.Config.POPULATION_SIZE))
+                    size = max(
+                        2,
+                        int(
+                            (species.adjusted_fitness / adj_fitness_sum)
+                            * self.Config.POPULATION_SIZE
+                        ),
+                    )
                 else:
                     size = 2
 
@@ -150,34 +158,44 @@ class Population:
 
             if self.novelty:
                 if best_genome.objective_score >= self.Config.FITNESS_THRESHOLD:
-                    logger.info(f'Fitness threshold crossed: ')
-                    logger.info(f'Finished Generation {generation}')
-                    logger.info(f'Best Genome Novelty score: {best_genome.fitness}')
-                    logger.info(f'Best Genome Objective score: {best_genome.objective_score}')
-                    logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                    logger.info("Fitness threshold crossed: ")
+                    logger.info(f"Finished Generation {generation}")
+                    logger.info(f"Best Genome Novelty score: {best_genome.fitness}")
+                    logger.info(
+                        f"Best Genome Objective score: {best_genome.objective_score}"
+                    )
+                    logger.info(
+                        f"Best Genome Length {len(best_genome.connection_genes)}\n"
+                    )
                     return best_genome, generation
             else:
                 if best_genome.fitness >= self.Config.FITNESS_THRESHOLD:
-                    logger.info(f'Fitness threshold crossed: ')
-                    logger.info(f'Finished Generation {generation}')
-                    logger.info(f'Best Genome Fitness: {best_genome.fitness}')
-                    logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                    logger.info("Fitness threshold crossed: ")
+                    logger.info(f"Finished Generation {generation}")
+                    logger.info(f"Best Genome Fitness: {best_genome.fitness}")
+                    logger.info(
+                        f"Best Genome Length {len(best_genome.connection_genes)}\n"
+                    )
                     return best_genome, generation
 
             # Generation Stats
             if self.Config.VERBOSE:
-                logger.info(f'Finished Generation {generation}')
+                logger.info(f"Finished Generation {generation}")
                 if self.novelty:
-                    logger.info(f'Best Genome Novelty score: {best_genome.fitness}')
-                    logger.info(f'Best Genome Objective score: {best_genome.objective_score}')
+                    logger.info(f"Best Genome Novelty score: {best_genome.fitness}")
+                    logger.info(
+                        f"Best Genome Objective score: {best_genome.objective_score}"
+                    )
                 else:
-                    logger.info(f'Best Genome Fitness: {best_genome.fitness}')
+                    logger.info(f"Best Genome Fitness: {best_genome.fitness}")
 
-                logger.info(f'Best Genome Length {len(best_genome.connection_genes)}\n')
+                logger.info(f"Best Genome Length {len(best_genome.connection_genes)}\n")
 
             # Call the on_generation function after each generation, for further processing.
             if self.on_generation:
-                self.on_generation(generation, best_genome, len(best_genome.connection_genes))
+                self.on_generation(
+                    generation, best_genome, len(best_genome.connection_genes)
+                )
 
         return None, None
 
@@ -250,7 +268,11 @@ class Population:
     def export(self, filename):
         with open(filename, "wb") as f:
             if self.novelty:
-                export = {"population": self.population, "species": self.species, "archive": self.archive}
+                export = {
+                    "population": self.population,
+                    "species": self.species,
+                    "archive": self.archive,
+                }
             else:
                 export = {"population": self.population, "species": self.species}
 

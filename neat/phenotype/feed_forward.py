@@ -27,7 +27,6 @@ class FeedForwardNet(nn.Module):
         input_units = [u for u in self.units if u.ref_node.type == "input"]
         output_units = [u for u in self.units if u.ref_node.type == "output"]
         bias_units = [u for u in self.units if u.ref_node.type == "bias"]
-        stacked_units = self.genome.order_units(self.units)
 
         # Set input values
         for u in input_units:
