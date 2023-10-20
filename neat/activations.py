@@ -1,5 +1,3 @@
-import logging
-
 import torch
 
 
@@ -16,13 +14,8 @@ def relu(x):
 
 
 class Activations:
-
     def __init__(self):
-        self.functions = dict(
-            sigmoid=sigmoid,
-            tanh=tanh,
-            relu=relu
-        )
+        self.functions = dict(sigmoid=sigmoid, tanh=tanh, relu=relu)
 
     def get(self, func_name):
         return self.functions.get(func_name, None)

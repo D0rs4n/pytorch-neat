@@ -13,7 +13,6 @@ from copy import deepcopy
 import neat.utils as utils
 from neat.genotype.genome import Genome
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -49,8 +48,12 @@ def crossover(genome_1, genome_2, config, population):
 
         # Apply rate of disabled gene being re-enabled
         if not child_gene.is_enabled:
-            is_reenabeled = utils.rand_uni_val() <= config.CROSSOVER_REENABLE_CONNECTION_GENE_RATE
-            enabled_in_best_parent = best_parent.get_connect_gene(child_gene.innov_num).is_enabled
+            is_reenabeled = (
+                utils.rand_uni_val() <= config.CROSSOVER_REENABLE_CONNECTION_GENE_RATE
+            )
+            enabled_in_best_parent = best_parent.get_connect_gene(
+                child_gene.innov_num
+            ).is_enabled
 
             if is_reenabeled or enabled_in_best_parent:
                 child_gene.is_enabled = True

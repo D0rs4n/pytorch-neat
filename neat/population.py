@@ -1,15 +1,15 @@
 import logging
 import random
 
-import numpy as np
 import cloudpickle
 from sklearn.neighbors import NearestNeighbors
+import numpy as np
 
 import neat.utils as utils
-from neat.genotype.genome import Genome
-from neat.species import Species
 from neat.crossover import crossover
+from neat.genotype.genome import Genome
 from neat.mutation import mutate
+from neat.species import Species
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,9 @@ class Population:
             for species in remaining_species:
                 # Set adjusted fitness
                 avg_species_fitness = np.mean([g.fitness for g in species.members])
-                species.adjusted_fitness = (avg_species_fitness - min_fitness) / fit_range
+                species.adjusted_fitness = (
+                    avg_species_fitness - min_fitness
+                ) / fit_range
 
             adj_fitnesses = [s.adjusted_fitness for s in remaining_species]
             adj_fitness_sum = sum(adj_fitnesses)
@@ -187,7 +189,10 @@ class Population:
         :return: None
         """
         for species in self.species:
-            if Species.species_distance(genome, species.model_genome) <= self.Config.SPECIATION_THRESHOLD:
+            if (
+                Species.species_distance(genome, species.model_genome)
+                <= self.Config.SPECIATION_THRESHOLD
+            ):
                 genome.species = species.id
                 species.members.append(genome)
                 return
@@ -215,24 +220,28 @@ class Population:
 
             # Create nodes
             for j in range(self.Config.NUM_INPUTS):
-                n = new_genome.add_node_gene('input')
+                n = new_genome.add_node_gene("input")
                 inputs.append(n)
 
             for j in range(self.Config.NUM_OUTPUTS):
-                n = new_genome.add_node_gene('output')
+                n = new_genome.add_node_gene("output")
                 outputs.append(n)
 
             if self.Config.USE_BIAS:
-                bias = new_genome.add_node_gene('bias')
+                bias = new_genome.add_node_gene("bias")
 
             # Create connections
             for input in inputs:
                 for output in outputs:
-                    new_genome.add_connection_gene(input.id, output.id, population=Population)
+                    new_genome.add_connection_gene(
+                        input.id, output.id, population=Population
+                    )
 
             if bias is not None:
                 for output in outputs:
-                    new_genome.add_connection_gene(bias.id, output.id, population=Population)
+                    new_genome.add_connection_gene(
+                        bias.id, output.id, population=Population
+                    )
 
             pop.append(new_genome)
 

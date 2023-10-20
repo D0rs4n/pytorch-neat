@@ -1,12 +1,10 @@
 import logging
 import sys
 
-
 logger = logging.getLogger(__name__)
 
 
 class Species:
-
     def __init__(self, id, model_genome, generation):
         self.id = id
         self.model_genome = model_genome
@@ -53,7 +51,7 @@ class Species:
             s.fitness_history.append(s.fitness)
             s.adjusted_fitness = None
 
-            if prev_fitness is None or s.fitness >prev_fitness:
+            if prev_fitness is None or s.fitness > prev_fitness:
                 s.last_improved = generation
 
             species_data.append(s)
@@ -87,4 +85,3 @@ class Species:
             species_fitnesses.append(s.fitness)
 
         return result
-

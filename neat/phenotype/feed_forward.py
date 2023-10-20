@@ -1,15 +1,15 @@
 import logging
+
 import torch
 import torch.nn as nn
-import neat.activations as a
 from torch import autograd
 
+import neat.activations as a
 
 logger = logging.getLogger(__name__)
 
 
 class FeedForwardNet(nn.Module):
-
     def __init__(self, genome, config):
         super(FeedForwardNet, self).__init__()
         self.genome = genome
@@ -24,9 +24,10 @@ class FeedForwardNet(nn.Module):
 
     def forward(self, x):
         outputs = dict()
-        input_units = [u for u in self.units if u.ref_node.type == 'input']
-        output_units = [u for u in self.units if u.ref_node.type == 'output']
-        bias_units = [u for u in self.units if u.ref_node.type == 'bias']
+        input_units = [u for u in self.units if u.ref_node.type == "input"]
+        output_units = [u for u in self.units if u.ref_node.type == "output"]
+        bias_units = [u for u in self.units if u.ref_node.type == "bias"]
+        stacked_units = self.genome.order_units(self.units)
 
         # Set input values
         for u in input_units:
@@ -41,10 +42,15 @@ class FeedForwardNet(nn.Module):
         while i >= 0:
             current_unit = self.stacked_units[i]
 
-            if current_unit.ref_node.type != 'input' and current_unit.ref_node.type != 'bias':
+            if (
+                current_unit.ref_node.type != "input"
+                and current_unit.ref_node.type != "bias"
+            ):
                 # Build input vector to current node
                 inputs_ids = self.genome.get_inputs_ids(current_unit.ref_node.id)
-                in_vec = autograd.Variable(torch.zeros((1, len(inputs_ids)), device=device, requires_grad=True))
+                in_vec = autograd.Variable(
+                    torch.zeros((1, len(inputs_ids)), device=device, requires_grad=True)
+                )
 
                 for i, input_id in enumerate(inputs_ids):
                     in_vec[0][i] = outputs[input_id]
@@ -61,7 +67,9 @@ class FeedForwardNet(nn.Module):
                 outputs[current_unit.ref_node.id] = out
                 i -= 1
         # Build output vector
-        output = autograd.Variable(torch.zeros((1, len(output_units)), device=device, requires_grad=True))
+        output = autograd.Variable(
+            torch.zeros((1, len(output_units)), device=device, requires_grad=True)
+        )
         for i, u in enumerate(output_units):
             output[0][i] = outputs[u.ref_node.id]
         return output
@@ -82,24 +90,23 @@ class FeedForwardNet(nn.Module):
 
 
 class Unit:
-
     def __init__(self, ref_node, num_in_features):
         self.ref_node = ref_node
         self.linear = self.build_linear(num_in_features)
 
     def set_weights(self, weights):
-        if self.ref_node.type != 'input' and self.ref_node.type != 'bias':
+        if self.ref_node.type != "input" and self.ref_node.type != "bias":
             weights = torch.cat(weights).unsqueeze(0)
             for p in self.linear.parameters():
                 p.data = weights
 
     def build_linear(self, num_in_features):
-        if self.ref_node.type == 'input' or self.ref_node.type == 'bias':
+        if self.ref_node.type == "input" or self.ref_node.type == "bias":
             return None
         return nn.Linear(num_in_features, 1, False)
 
     def __str__(self):
-        return 'Reference Node: ' + str(self.ref_node) + '\n'
+        return "Reference Node: " + str(self.ref_node) + "\n"
 
 
 # TODO: Multiple GPU support get from config

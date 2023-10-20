@@ -4,12 +4,10 @@ import random
 from neat.genotype.connection_gene import ConnectionGene
 from neat.genotype.node_gene import NodeGene
 
-
 logger = logging.getLogger(__name__)
 
 
 class Genome:
-
     def __init__(self):
         self.connection_genes = []
         self.node_genes = []
@@ -27,10 +25,12 @@ class Genome:
         """
         # TODO: better algorithm?
 
-        potential_inputs = [n.id for n in self.node_genes if n.type != 'output']
-        potential_outputs = [n.id for n in self.node_genes if n.type != 'input' and n.type != 'bias']
+        potential_inputs = [n.id for n in self.node_genes if n.type != "output"]
+        potential_outputs = [
+            n.id for n in self.node_genes if n.type != "input" and n.type != "bias"
+        ]
 
-        if len(potential_outputs) is not 0 and len(potential_inputs) is not 0:
+        if len(potential_outputs) != 0 and len(potential_inputs) != 0:
             node_in_id = random.choice(potential_inputs)
             node_out_id = random.choice(potential_outputs)
 
@@ -47,17 +47,19 @@ class Genome:
         out receives the same weight as the old connection.
         """
         # Get new_node id
-        new_node = self.add_node_gene('hidden')
+        new_node = self.add_node_gene("hidden")
         # Get a random existing connection
         existing_connection = self._get_rand_connection_gene()
 
         # Create two connections to replace existing connection with new node in the middle
-        self.add_connection_gene(existing_connection.in_node_id, new_node.id, weight=1, population=population)
+        self.add_connection_gene(
+            existing_connection.in_node_id, new_node.id, weight=1, population=population
+        )
         self.add_connection_gene(
             new_node.id,
             existing_connection.out_node_id,
             weight=existing_connection.weight,
-            population=population
+            population=population,
         )
 
         # disable original connection
@@ -132,7 +134,9 @@ class Genome:
                 node_input_ids.append(c_gene.in_node_id)
         return node_input_ids
 
-    def add_connection_gene(self, in_node_id, out_node_id, is_enabled=True, weight=None, population=None):
+    def add_connection_gene(
+        self, in_node_id, out_node_id, is_enabled=True, weight=None, population=None
+    ):
         new_c_gene = ConnectionGene(in_node_id, out_node_id, is_enabled, population)
 
         if weight is not None:
@@ -151,7 +155,9 @@ class Genome:
         return new_gene
 
     def add_connection_copy(self, copy, population):
-        new_c_gene = ConnectionGene(copy.in_node_id, copy.out_node_id, copy.is_enabled, population)
+        new_c_gene = ConnectionGene(
+            copy.in_node_id, copy.out_node_id, copy.is_enabled, population
+        )
         new_c_gene.set_weight(float(copy.weight))
         new_c_gene.set_innov_num(copy.innov_num)
 
@@ -206,7 +212,6 @@ class Genome:
 
             for c_gene in self.connection_genes:
                 if c_gene.in_node_id in visited and c_gene.out_node_id not in visited:
-
                     if c_gene.out_node_id == node_in_id:
                         return True
                     else:
@@ -237,7 +242,11 @@ class Genome:
         :param nodes: List containing genome's node genes
         :return: List of node genes
         """
-        out_ids = [c.out_node_id for c in self.connection_genes if (c.in_node_id == node.id) and c.is_enabled]
+        out_ids = [
+            c.out_node_id
+            for c in self.connection_genes
+            if (c.in_node_id == node.id) and c.is_enabled
+        ]
         return [n for n in nodes if n.id in out_ids]
 
     def order_units(self, units):
@@ -274,12 +283,12 @@ class Genome:
         ordered.append(node)
 
     def __str__(self):
-        ret = 'Connections:\n\n'
+        ret = "Connections:\n\n"
         for connect_gene in self.connection_genes:
-            ret += str(connect_gene) + '\n'
+            ret += str(connect_gene) + "\n"
 
-        ret += 'Nodes: \n\n'
+        ret += "Nodes: \n\n"
         for node_gene in self.node_genes:
-            ret += str(node_gene) + '\n'
+            ret += str(node_gene) + "\n"
 
         return ret
